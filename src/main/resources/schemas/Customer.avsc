@@ -1,0 +1,21 @@
+{
+  "name": "Customer",
+  "namespace": "smb.schema",
+  "type": "record",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "int"
+    },
+    {
+      "name": "country",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        }
+      ]
+    }
+  ]
+}

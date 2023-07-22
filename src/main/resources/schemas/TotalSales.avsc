@@ -1,0 +1,15 @@
+{
+  "name": "TotalSales",
+  "namespace": "smb.schema",
+  "type": "record",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "int"
+    },
+    {
+      "name": "totalOrder",
+      "type": "int"
+    }
+  ]
+}
