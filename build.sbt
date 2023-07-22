@@ -61,6 +61,7 @@ lazy val root = (project in file("."))
       "com.spotify" %% "scio-smb" % scioVersion,
       "com.spotify" %% "scio-avro" % scioVersion,
       "com.spotify" %% "scio-test" % scioVersion
-    )
+    ),
+    resolvers += "confluent" at "https://packages.confluent.io/maven/"
   )
   .settings(beamRunnerSettings)
