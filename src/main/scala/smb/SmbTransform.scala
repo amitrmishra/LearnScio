@@ -1,13 +1,12 @@
 package smb
 
 import com.spotify.scio.{ContextAndArgs, ScioContext}
-import org.apache.avro.generic.GenericRecord
 import org.apache.beam.sdk.extensions.smb.{
   AvroSortedBucketIO,
   TargetParallelism
 }
 import org.apache.beam.sdk.values.TupleTag
-import smb.schema.{Account, Schemas}
+import smb.schema.{Sales, TotalSales}
 
 object SmbTransform {
   import com.spotify.scio.smb._
@@ -16,39 +15,24 @@ object SmbTransform {
     val (sc, args) = ContextAndArgs(cmdLineArgs)
 
     // #SortMergeBucketExample_transform
-    val (readLhs, readRhs) = (
-      AvroSortedBucketIO
-        .read(
-          new TupleTag[GenericRecord]("lhs"),
-          Schemas.TotalSalesSchema
-        )
-        .from(args("users")),
-      AvroSortedBucketIO
-        .read(new TupleTag[Account]("rhs"), classOf[Account])
-        .from(args("accounts"))
-    )
-
     sc.sortMergeTransform(
-      classOf[String],
-      readLhs,
-      readRhs,
+      classOf[Integer],
+      AvroSortedBucketIO
+        .read(new TupleTag[Sales]("sales"), classOf[Sales])
+        .from(args("salesSmb")),
       TargetParallelism.auto()
     ).to(
       AvroSortedBucketIO
-        .transformOutput(classOf[String], "name", classOf[Account])
-        .to(args("output"))
-    ).via { case (key, (users, accounts), outputCollector) =>
-      users.foreach { _ =>
-        outputCollector.accept(
-          Account
-            .newBuilder()
-            .setId(key.toInt)
-            .setName(key)
-            .setType("combinedAmount")
-            .setAmount(accounts.foldLeft(0.0)(_ + _.getAmount))
-            .build()
-        )
-      }
+        .transformOutput(classOf[Integer], "userId", classOf[TotalSales])
+        .to(args("salesSmb"))
+    ).via { case (key, sales, outputCollector) =>
+      outputCollector.accept(
+        TotalSales
+          .newBuilder()
+          .setUserId(key)
+          .setTotalOrder(sales.map(_.getOrderValue).reduce(_ + _))
+          .build()
+      )
     }
     // #SortMergeBucketExample_transform
     sc

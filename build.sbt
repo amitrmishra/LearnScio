@@ -65,3 +65,79 @@ lazy val root = (project in file("."))
     resolvers += "confluent" at "https://packages.confluent.io/maven/"
   )
   .settings(beamRunnerSettings)
+  .settings(
+    assembly / assemblyJarName := "learn-scio.jar",
+    assembly / test := {},
+    assembly / assemblyMergeStrategy ~= { old =>
+      {
+        case PathList(
+              "org",
+              "apache",
+              "beam",
+              "sdk",
+              "extensions",
+              "avro",
+              _*
+            ) =>
+          // prefer beam avro classes from extensions lib instead of ones shipped in runners
+          CustomMergeStrategy("BeamAvro") { conflicts =>
+            import sbtassembly.Assembly._
+            conflicts.collectFirst {
+              case Library(
+                    ModuleCoordinate(_, "beam-sdks-java-extensions-avro", _),
+                    _,
+                    t,
+                    s
+                  ) =>
+                JarEntry(t, s)
+            } match {
+              case Some(e) => Right(Vector(e))
+              case None    => Left("Error merging beam avro classes")
+            }
+          }
+        case PathList("org", "checkerframework", _*) =>
+          // prefer checker-qual classes packaged in checkerframework libs
+          CustomMergeStrategy("CheckerQual") { conflicts =>
+            import sbtassembly.Assembly._
+            conflicts.collectFirst {
+              case Library(
+                    ModuleCoordinate("org.checkerframework", _, _),
+                    _,
+                    t,
+                    s
+                  ) =>
+                JarEntry(t, s)
+            } match {
+              case Some(e) => Right(Vector(e))
+              case None    => Left("Error merging checker-qual classes")
+            }
+          }
+        case PathList("dev", "ludovic", "netlib", "InstanceBuilder.class") =>
+          // arbitrary pick last conflicting InstanceBuilder
+          MergeStrategy.last
+        case s if s.endsWith(".proto") =>
+          // arbitrary pick last conflicting proto file
+          MergeStrategy.last
+        case PathList("git.properties") =>
+          // drop conflicting git properties
+          MergeStrategy.discard
+        case PathList("META-INF", "versions", "9", "module-info.class") =>
+          // drop conflicting module-info.class
+          MergeStrategy.discard
+        case PathList(
+              "META-INF",
+              "gradle",
+              "incremental.annotation.processors"
+            ) =>
+          // drop conflicting kotlin compiler info
+          MergeStrategy.discard
+        case PathList("META-INF", "io.netty.versions.properties") =>
+          // merge conflicting netty property files
+          MergeStrategy.filterDistinctLines
+        case PathList("META-INF", "native-image", "native-image.properties") =>
+          // merge conflicting native-image property files
+          MergeStrategy.filterDistinctLines
+        case s => old(s)
+      }
+    }
+  )

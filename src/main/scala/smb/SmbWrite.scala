@@ -1,18 +1,13 @@
 package smb
 
 import com.spotify.scio.{ContextAndArgs, ScioContext}
-import com.spotify.scio.coders.Coder
 import org.apache.avro.file.CodecFactory
-import org.apache.avro.generic.GenericRecord
 import org.apache.beam.sdk.extensions.smb.AvroSortedBucketIO
 import org.apache.beam.sdk.extensions.smb.BucketMetadata.HashType
-import smb.schema.{Account, Customer, Sales, Schemas, TotalSales}
+import smb.schema.{Customer, Sales, TotalSales}
 
 object SmbWrite {
   import com.spotify.scio.smb._
-
-//  implicit val coder: Coder[GenericRecord] =
-//    Coder.avroGenericRecordCoder(Schemas.UserDataSchema)
 
   def pipeline(cmdLineArgs: Array[String]): ScioContext = {
     val (sc, args) = ContextAndArgs(cmdLineArgs)
@@ -36,7 +31,7 @@ object SmbWrite {
           // Insufficient value may lead to below error:
           //   InMemorySorter buffer exceeded memoryMb limit.
           //   Transferring from in-memory to external sort.
-          .withSorterMemoryMb(2048)
+          .withSorterMemoryMb(4096)
           .withTempDirectory(sc.options.getTempLocation)
           .withCodec(
             CodecFactory.deflateCodec(CodecFactory.DEFAULT_DEFLATE_LEVEL)
@@ -62,7 +57,7 @@ object SmbWrite {
             classOf[TotalSales]
           )
           .to(args("totalSalesSmbOut"))
-          .withSorterMemoryMb(2048)
+          .withSorterMemoryMb(4096)
           .withTempDirectory(sc.options.getTempLocation)
           .withCodec(
             CodecFactory.deflateCodec(CodecFactory.DEFAULT_DEFLATE_LEVEL)
@@ -89,7 +84,7 @@ object SmbWrite {
             classOf[Customer]
           )
           .to(args("customersSmbOut"))
-          .withSorterMemoryMb(2048)
+          .withSorterMemoryMb(4096)
           .withTempDirectory(sc.options.getTempLocation)
           .withCodec(
             CodecFactory.deflateCodec(CodecFactory.DEFAULT_DEFLATE_LEVEL)

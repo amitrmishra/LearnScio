@@ -1,23 +1,18 @@
 package smb
 
 import com.spotify.scio.{ContextAndArgs, ScioContext}
-import com.spotify.scio.coders.Coder
-import org.apache.avro.generic.GenericRecord
 import org.apache.beam.sdk.extensions.smb.{
   AvroSortedBucketIO,
   TargetParallelism
 }
 import org.apache.beam.sdk.values.TupleTag
-import smb.schema.{Account, Customer, Schemas, TotalSales}
+import smb.schema.{Customer, TotalSales}
 
 object SmbJoin {
   import com.spotify.scio.smb._
 
-//  implicit val coder: Coder[GenericRecord] =
-//    Coder.avroGenericRecordCoder(Schemas.UserDataSchema)
-
   case class UserSalesCountry(
-      userId: String,
+      userId: Integer,
       totalOrder: Int,
       country: String
   ) {
@@ -27,7 +22,7 @@ object SmbJoin {
   def pipeline(cmdLineArgs: Array[String]): ScioContext = {
     val (sc, args) = ContextAndArgs(cmdLineArgs)
 
-    val mapFn: ((String, (TotalSales, Customer))) => UserSalesCountry = {
+    val mapFn: ((Integer, (TotalSales, Customer))) => UserSalesCountry = {
       case (userId, (totalSales, customer)) =>
         UserSalesCountry(
           userId,
@@ -38,7 +33,7 @@ object SmbJoin {
 
     // #SortMergeBucketExample_join
     sc.sortMergeJoin(
-      classOf[String],
+      classOf[Integer],
       AvroSortedBucketIO
         .read(
           new TupleTag[TotalSales]("lhs"),
