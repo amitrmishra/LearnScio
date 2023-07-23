@@ -8,7 +8,7 @@ import org.apache.beam.sdk.extensions.smb.{
 import org.apache.beam.sdk.values.TupleTag
 import smb.schema.{Sales, TotalSales}
 
-object SmbTransform {
+object SmbAggregate {
   import com.spotify.scio.smb._
 
   def pipeline(cmdLineArgs: Array[String]): ScioContext = {
