@@ -20,7 +20,11 @@ object SmbAggregate {
       AvroSortedBucketIO
         .read(new TupleTag[Sales]("sales"), classOf[Sales])
         .from(args("salesSmb")),
-      TargetParallelism.auto()
+      // With, TargetParallelism.auto() number of output files (ie. buckets) may be different from
+      //   the number of source buckets.
+      // Eg: source may have 8 but target will have 4 (both will be power of 2 however and,
+      //   hence compatible)
+      TargetParallelism.max()
     ).to(
       AvroSortedBucketIO
         .transformOutput(classOf[Integer], "userId", classOf[TotalSales])
