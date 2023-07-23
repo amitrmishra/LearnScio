@@ -24,7 +24,7 @@ object SmbAggregate {
     ).to(
       AvroSortedBucketIO
         .transformOutput(classOf[Integer], "userId", classOf[TotalSales])
-        .to(args("salesSmb"))
+        .to(args("smbAggregateOutput"))
     ).via { case (key, sales, outputCollector) =>
       outputCollector.accept(
         TotalSales
