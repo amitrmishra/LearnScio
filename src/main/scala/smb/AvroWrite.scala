@@ -4,7 +4,7 @@ import com.spotify.scio.avro._
 import com.spotify.scio.{ContextAndArgs, ScioContext}
 import smb.schema.Sales
 
-object WriteAvro {
+object AvroWrite {
 
   def pipeline(cmdLineArgs: Array[String]): ScioContext = {
     val (sc, args) = ContextAndArgs(cmdLineArgs)
