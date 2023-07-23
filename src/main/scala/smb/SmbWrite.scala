@@ -4,7 +4,7 @@ import com.spotify.scio.{ContextAndArgs, ScioContext}
 import org.apache.avro.file.CodecFactory
 import org.apache.beam.sdk.extensions.smb.AvroSortedBucketIO
 import org.apache.beam.sdk.extensions.smb.BucketMetadata.HashType
-import smb.schema.{Customer, Sales, TotalSales}
+import smb.schema.{Customer, Sales}
 
 object SmbWrite {
   import com.spotify.scio.smb._
