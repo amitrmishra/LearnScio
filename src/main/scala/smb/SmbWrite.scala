@@ -41,32 +41,6 @@ object SmbWrite {
           .withNumShards(1)
       )
 
-    sc.textFile(args("totalSales"))
-      .map(line =>
-        TotalSales
-          .newBuilder()
-          .setUserId(line.split(",")(0).toInt)
-          .setTotalOrder(line.split(",")(1).toInt)
-          .build()
-      )
-      .saveAsSortedBucket(
-        AvroSortedBucketIO
-          .write[Integer, TotalSales](
-            classOf[Integer],
-            "userId",
-            classOf[TotalSales]
-          )
-          .to(args("totalSalesSmbOut"))
-          .withSorterMemoryMb(4096)
-          .withTempDirectory(sc.options.getTempLocation)
-          .withCodec(
-            CodecFactory.deflateCodec(CodecFactory.DEFAULT_DEFLATE_LEVEL)
-          )
-          .withHashType(HashType.MURMUR3_32)
-          .withNumBuckets(8)
-          .withNumShards(1)
-      )
-
     // #SortMergeBucketExample_sink
     sc.textFile(args("customers"))
       .map(line =>
