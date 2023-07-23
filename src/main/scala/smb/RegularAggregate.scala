@@ -24,7 +24,7 @@ object RegularAggregate {
       .map { case (userId, totalOrder) =>
         s"$userId,$totalOrder"
       }
-      .saveAsTextFile(args("regularJoinOutput"))
+      .saveAsTextFile(args("regularAggregateOutput"))
 
     sc
   }
