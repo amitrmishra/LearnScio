@@ -20,13 +20,16 @@ object SmbAggregate {
       AvroSortedBucketIO
         .read(new TupleTag[Sales]("sales"), classOf[Sales])
         .from(args("salesSmb")),
-      // With, TargetParallelism.auto() number of output files (ie. buckets) may be different from
+      TargetParallelism.max()
+      // We may also use TargetParallelism.auto()
+      // In that case the number of output files (ie. buckets) could be different from
       //   the number of source buckets.
       // Eg: source may have 8 but target will have 4 (both will be power of 2 however and,
       //   hence compatible)
-      TargetParallelism.max()
     ).to(
       AvroSortedBucketIO
+        // Predicate can also be specified during read to filter out the records. This is especially
+        //   efficient when reading parquet files
         .transformOutput(classOf[Integer], "userId", classOf[TotalSales])
         .to(args("smbAggregateOutput"))
     ).via { case (key, sales, outputCollector) =>

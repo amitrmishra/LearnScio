@@ -4,7 +4,7 @@ import com.spotify.scio.{ContextAndArgs, ScioContext}
 import org.apache.avro.file.CodecFactory
 import org.apache.beam.sdk.extensions.smb.AvroSortedBucketIO
 import org.apache.beam.sdk.extensions.smb.BucketMetadata.HashType
-import smb.schema.{Customer, Sales}
+import smb.schema.Sales
 
 object SmbWrite {
   import com.spotify.scio.smb._
@@ -12,7 +12,7 @@ object SmbWrite {
   def pipeline(cmdLineArgs: Array[String]): ScioContext = {
     val (sc, args) = ContextAndArgs(cmdLineArgs)
 
-    sc.textFile(args("sales"))
+    sc.textFile(args("sampleSales"))
       .map(line =>
         Sales
           .newBuilder()
@@ -29,47 +29,20 @@ object SmbWrite {
             "userId",
             classOf[Sales]
           )
-          .to(args("salesSmbOut"))
+          .to(args("sampleSalesSmbOut"))
           // Insufficient value may lead to below error:
           //   InMemorySorter buffer exceeded memoryMb limit.
           //   Transferring from in-memory to external sort.
-          .withSorterMemoryMb(4096)
-          .withTempDirectory(sc.options.getTempLocation)
-          .withCodec(
-            CodecFactory.deflateCodec(CodecFactory.DEFAULT_DEFLATE_LEVEL)
-          )
-          .withHashType(HashType.MURMUR3_32)
-          .withNumBuckets(8)
-          .withNumShards(1)
-      )
-
-    // #SortMergeBucketExample_sink
-    sc.textFile(args("customers"))
-      .map(line =>
-        Customer
-          .newBuilder()
-          .setUserId(line.split(",")(0).toInt)
-          .setCountry(line.split(",")(1))
-          .build()
-      )
-      .saveAsSortedBucket(
-        AvroSortedBucketIO
-          .write[Integer, Customer](
-            classOf[Integer],
-            "userId",
-            classOf[Customer]
-          )
-          .to(args("customersSmbOut"))
-          .withSorterMemoryMb(4096)
+          .withSorterMemoryMb(128)
           .withTempDirectory(sc.options.getTempLocation)
           .withCodec(
             CodecFactory.deflateCodec(CodecFactory.DEFAULT_DEFLATE_LEVEL)
           )
           .withHashType(HashType.MURMUR3_32)
           .withNumBuckets(4)
-          .withNumShards(1)
+          .withNumShards(2)
       )
-    // #SortMergeBucketExample_sink
+
     sc
   }
 
