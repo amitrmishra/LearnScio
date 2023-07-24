@@ -6,7 +6,7 @@ import org.apache.beam.sdk.extensions.smb.AvroSortedBucketIO
 import org.apache.beam.sdk.extensions.smb.BucketMetadata.HashType
 import smb.schema.Sales
 
-object SmbWrite {
+object SmbWriteSharded {
   import com.spotify.scio.smb._
 
   def pipeline(cmdLineArgs: Array[String]): ScioContext = {
