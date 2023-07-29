@@ -31,8 +31,10 @@ object SmbWrite {
           )
           .to(args("salesSmbOut"))
           // Insufficient value may lead to below error:
-          //   InMemorySorter buffer exceeded memoryMb limit.
-          //   Transferring from in-memory to external sort.
+          //   """
+          //      InMemorySorter buffer exceeded memoryMb limit.
+          //      Transferring from in-memory to external sort.
+          //   """
           .withSorterMemoryMb(4096)
           .withTempDirectory(sc.options.getTempLocation)
           .withCodec(
